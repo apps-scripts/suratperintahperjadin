@@ -870,42 +870,48 @@ span.flatpickr-weekday {
       display: flex !important;
     }
 
-    /* Efek Hover Seragam */
-    .btn-main-action:hover, .btn-batal-grad:hover {
-      transform: translateY(-2px) translateZ(0);
-      box-shadow: 0 6px 15px rgba(99, 102, 241, 0.4) !important;
+    .btn-main-action:hover {
+      /* JANGAN gunakan translateY atau scale di sini agar tidak bergetar */
       filter: brightness(1.1);
+      box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3) !important;
+      cursor: pointer;
     }
 
-    /* Efek Kilatan Cahaya (Shine Effect) */
-    .btn-main-action::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(
-        120deg,
-        transparent,
-        rgba(255, 255, 255, 0.3),
-        transparent
-      );
-      transition: all 0.6s;
+    .btn-main-action {
+      background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%) !important;
+      color: white !important;
+      border: none !important;
+      padding: 14px 20px !important;
+      border-radius: 12px !important; /* Kurangi sedikit rounded agar lebih kotak profesional */
+      font-weight: 700 !important;
+      font-size: 0.95rem !important;
+      position: relative;
+      overflow: hidden;
+      display: flex !important;
+      justify-content: center !important;
+      align-items: center !important;
+      gap: 10px;
+      
+      /* Gunakan shadow padat, bukan glow meluap */
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+      
+      /* KUNCI STABILITAS: Paksa render di GPU & matikan gerakan vertikal */
+      transform: translateZ(0); 
+      backface-visibility: hidden;
+      perspective: 1000px;
+      transition: filter 0.2s ease, box-shadow 0.2s ease !important;
     }
+    
 
     .btn-main-action:hover::before {
       left: 100%;
     }
 
-    .btn-main-action:hover {
-      transform: scale(1.02) translateY(-4px); /* Sedikit membesar dan naik */
-      box-shadow: 0 15px 30px -5px rgba(99, 102, 241, 0.5) !important;
-      filter: brightness(1.1);
-    }
+    
 
     .btn-main-action:active {
-      transform: scale(0.98);
+      filter: brightness(0.9);
+      transform: scale(0.98); /* Sedikit mengecil saat diklik tetap aman */
     }
 
     /* Penyesuaian Icon agar lebih dinamis */
@@ -970,21 +976,19 @@ span.flatpickr-weekday {
     }
 
     /* --- CUSTOM CANCEL BUTTON STYLE --- */
-    .btn-cancel-modern {
+     .btn-cancel-modern {
       background-color: #f1f5f9 !important;
       color: #64748b !important;
       border: 1px solid #e2e8f0 !important;
       padding: 12px 30px !important;
-      border-radius: 14px !important; /* Menyamakan dengan tombol Simpan */
+      border-radius: 12px !important;
       font-weight: 700 !important;
-      transition: all 0.3s ease !important;
-      font-size: 0.95rem !important;
+      transition: all 0.2s ease !important;
     }
 
     .btn-cancel-modern:hover {
       background-color: #e2e8f0 !important;
-      color: #475569 !important;
-      transform: translateY(-2px);
+      color: #334155 !important;
     }
 
     /* --- MODERN GRADIENT EXPORT BUTTONS --- */
@@ -2493,7 +2497,7 @@ function updateLoadingUI(val) {
         scrollX: true,
         autoWidth: false,
         dom: "<'row'<'col-sm-12'tr>><'row bg-light py-2 border-top mt-2 align-items-center'<'col-sm-4'l><'col-sm-4 text-center text-muted'i><'col-sm-4'p>>",
-        language: { lengthMenu: "Tampilkan: _MENU_", info: "_TOTAL_ Pegawai", paginate: { next: '>', previous: '<' } },
+        language: { lengthMenu: "Tampilkan: _MENU_", info: "Total : _TOTAL_ Pegawai", paginate: { next: '>', previous: '<' } },
         columnDefs: [{ targets: 0, width: "300px" }, { targets: 4, width: "100px" }]
       });
 
@@ -2533,7 +2537,7 @@ function updateLoadingUI(val) {
         scrollX: true,
         autoWidth: false,
         dom: "<'row'<'col-sm-12'tr>><'row bg-light py-2 border-top mt-2 align-items-center'<'col-sm-6'i><'col-sm-6'p>>",
-        language: { lengthMenu: "Tampilkan: _MENU_", info: "_TOTAL_ Kegiatan" }
+        language: { lengthMenu: "Tampilkan: _MENU_", info: "Total : _TOTAL_ Sub Kegiatan" }
       });
 
       // Hubungkan Pencarian
@@ -2575,7 +2579,7 @@ function renderTablePejabat(data) {
         scrollX: true,
         autoWidth: false,
         dom: "<'row'<'col-sm-12'tr>><'row bg-light py-2 border-top mt-2 align-items-center'<'col-sm-6'i><'col-sm-6'p>>",
-        language: { lengthMenu: "Tampilkan: _MENU_", info: "_TOTAL_ Pejabat" }
+        language: { lengthMenu: "Tampilkan: _MENU_", info: "Total : _TOTAL_ Pejabat" }
       });
 
       // Hubungkan Pencarian
