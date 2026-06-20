@@ -1,0 +1,398 @@
+// ==========================================patkanSelNilai
+// KONFIGURASI
+// ==========================================
+const SPREADSHEET_ID = '1tXn4eM5D2pB31bSlymrI9gv9ntNh7nfnXJBUu8B0pT8';
+const TEMPLATE_ID_KECIL = '1trEtX3md4Hbb8W1LE9JNdWCXU_n3B-ZJ-cHF552cbl4'; 
+const TEMPLATE_ID_BESAR = '1qQCpsV5baFXT3yYpzgKS8gDaApl_1WTV4q5u5R_O76s';   
+
+const SHEET_PEGAWAI = 'DataPegawai';  
+const SHEET_KEGIATAN = 'DataKegiatan'; 
+const SHEET_PEJABAT = 'DataPejabat';
+const SHEET_DASAR_HUKUM = 'DataDasarHukum';
+const SHEET_RIWAYAT = 'DataRiwayat';
+
+// ==========================================
+// 1. FUNGSI UTAMA
+// ==========================================
+function doGet() {
+  return HtmlService.createTemplateFromFile('Index')
+    .evaluate()
+    .setTitle('Aplikasi Surat Perintah')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+}
+
+
+// ==========================================
+// 2. FUNGSI DATABASE (GET DATA MASTER)
+// ==========================================
+function getDataMaster() {
+  try {
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const fetch = (name, col, start) => {
+      const sh = ss.getSheetByName(name);
+      if (!sh || sh.getLastRow() < start) return [];
+      return sh.getRange(start, 1, sh.getLastRow() - (start - 1), col).getDisplayValues();
+    };
+    return { 
+      pegawai: fetch(SHEET_PEGAWAI, 4, 2),
+      kegiatan: fetch(SHEET_KEGIATAN, 2, 2),
+      pejabat: fetch(SHEET_PEJABAT, 3, 2),
+      dasarHukum: fetch(SHEET_DASAR_HUKUM, 1, 1),
+      riwayat: fetch(SHEET_RIWAYAT, 6, 2)
+    };
+  } catch (e) { throw new Error("Database Error: " + e.message); }
+}
+
+function getRiwayatData() {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName(SHEET_RIWAYAT);
+  if (sheet && sheet.getLastRow() > 1) {
+    return sheet.getRange(2, 1, sheet.getLastRow() - 1, 6).getDisplayValues();
+  }
+  return[];
+}
+
+
+function hapusRiwayatById(id) {
+  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_RIWAYAT);
+  if (sheet) {
+    const data = sheet.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][0] == id) {
+        sheet.deleteRow(i + 1);
+        return "Sukses";
+      }
+    }
+  }
+  throw new Error("Data Riwayat tidak ditemukan");
+}
+
+// --- CRUD PEGAWAI ---
+function tambahPegawai(data) {
+  SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_PEGAWAI).appendRow(["'"+data.nama, "'"+data.nip, data.gol, data.jab]);
+  return "Sukses";
+}
+
+// --- FUNGSI BULK UPLOAD PEGAWAI (EXCEL) ---
+function tambahPegawaiBulk(dataArray) {
+  try {
+    const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_PEGAWAI);
+    const rows = dataArray.map(function(item) {
+      return ["'" + item.nama, "'" + item.nip, item.gol, item.jab];
+    });
+    if (rows.length > 0) {
+      sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, 4).setValues(rows);
+    }
+    return "Sukses";
+  } catch (e) {
+    throw new Error("Gagal menyimpan data Excel: " + e.message);
+  }
+}
+
+function editPegawai(data, index) {
+  SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_PEGAWAI).getRange(index + 2, 1, 1, 4).setValues([["'"+data.nama, "'"+data.nip, data.gol, data.jab]]);
+  return "Sukses";
+}
+function hapusPegawaiByIndex(index) {
+  SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_PEGAWAI).deleteRow(index + 2);
+  return "Sukses";
+}
+
+// --- CRUD KEGIATAN ---
+function tambahKegiatan(data) {
+  SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_KEGIATAN).appendRow([data.kode, data.nama]);
+  return "Sukses";
+}
+function editKegiatan(data, index) {
+  SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_KEGIATAN).getRange(index + 2, 1, 1, 2).setValues([[data.kode, data.nama]]);
+  return "Sukses";
+}
+function hapusKegiatanByIndex(index) {
+  SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_KEGIATAN).deleteRow(index + 2);
+  return "Sukses";
+}
+
+// --- CRUD PEJABAT ---
+function tambahPejabat(data) {
+  SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_PEJABAT).appendRow(["'"+data.nama, "'"+data.nip, data.jab]);
+  return "Sukses";
+}
+function editPejabat(data, index) {
+  SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_PEJABAT).getRange(index + 2, 1, 1, 3).setValues([["'"+data.nama, "'"+data.nip, data.jab]]);
+  return "Sukses";
+}
+function hapusPejabatByIndex(index) {
+  SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_PEJABAT).deleteRow(index + 2);
+  return "Sukses";
+}
+
+// --- 1. STYLE UNTUK KOLOM NOMOR & LABEL (Kiri) ---
+function applyLabelStyle(cell) {
+  let p = cell.getChild(0).asParagraph();
+  p.setSpacingAfter(0).setSpacingBefore(0).setLineSpacing(1.0).setAlignment(DocumentApp.HorizontalAlignment.LEFT);
+  // Beri padding kiri sedikit agar tidak mepet garis
+  cell.setPaddingLeft(2).setPaddingTop(0).setPaddingBottom(1).setPaddingRight(0);
+  return cell;
+}
+
+// --- 2. STYLE UNTUK KOLOM NILAI (Titik Dua & Nama/Jabatan) ---
+function applyValueStyle(cell) {
+  let p = cell.getChild(0).asParagraph();
+  p.setSpacingAfter(0).setSpacingBefore(0).setLineSpacing(1.0).setAlignment(DocumentApp.HorizontalAlignment.JUSTIFY);
+  
+  // KUNCI: Gunakan angka 10pt. 
+  // Kita beri sel PADDING KIRI 10pt sebagai 'jarak aman'
+  // Lalu kita tarik baris pertama ke kiri -10pt
+  const indentSize = 10; 
+  
+  cell.setPaddingLeft(indentSize).setPaddingTop(0).setPaddingBottom(1).setPaddingRight(2);
+  
+  p.setIndentStart(indentSize);      // Baris 2 dst mulai di 10pt
+  p.setIndentFirstLine(-indentSize); // Baris 1 ditarik ke kiri -10pt (tepat di pinggir sel)
+  
+  return cell;
+}
+
+// --- 3. STYLE UNTUK DASAR HUKUM & UNTUK (Halaman 1) ---
+function processListSafe(body, placeholder, dataArray) {
+  const found = body.findText(placeholder);
+  if (!found) return;
+
+  const el = found.getElement();
+  const para = el.getParent().asParagraph();
+  const cell = para.getParent(); 
+
+  if (cell.getType() !== DocumentApp.ElementType.TABLE_CELL) return;
+
+  const cleanData = dataArray.filter(item => item && item.toString().trim() !== "");
+  
+  if (cleanData.length > 0) {
+    cell.clear(); 
+
+    // 1. KUNCI RATA KIRI:
+    // Kita beri ruang 20pt di kiri sel. Ruang ini khusus untuk tempat nomor 1, 2, 3.
+    cell.setPaddingLeft(20).setPaddingRight(5).setPaddingTop(6).setPaddingBottom(6);
+    cell.setVerticalAlignment(DocumentApp.VerticalAlignment.TOP);
+
+    cleanData.forEach((item, i) => {
+      const manualNumber = (i + 1) + ". ";
+      const newPara = cell.appendParagraph(manualNumber + item.toString());
+      
+      // 2. RATA KANAN-KIRI
+      newPara.setAlignment(DocumentApp.HorizontalAlignment.JUSTIFY)
+             .setFontFamily("Arial")
+             .setFontSize(11)
+             .setLineSpacing(1.15);
+
+      // 3. SPASI ANTAR NOMOR (Agar tidak rapat)
+      newPara.setSpacingAfter(10); 
+      newPara.setSpacingBefore(0);
+
+      // 4. KUNCI POSISI (Hanging Indent):
+      // IndentStart harus 0 agar teks baris ke-2 dst MENEMPEL di garis Padding (Rata Kiri).
+      // IndentFirstLine -15 untuk menarik nomor masuk ke area Padding agar terlihat.
+      newPara.setIndentStart(0); 
+      newPara.setIndentFirstLine(-15);
+    });
+
+    // Buang baris kosong sisa pembersihan
+    if (cell.getChild(0).asParagraph().getText() === "") {
+       cell.getChild(0).removeFromParent();
+    }
+  } else {
+    para.replaceText(placeholder, "-");
+  }
+}
+
+function generatePDF(formData) {
+  let tempFile;
+  try {
+    const timestamp = formData.idRiwayat ? formData.idRiwayat : new Date().getTime().toString();
+    formData.idRiwayat = timestamp; 
+
+    // --- 1. DATABASE RIWAYAT ---
+    try {
+      const sheetRiwayat = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_RIWAYAT);
+      if (sheetRiwayat) {
+        const rowData = [timestamp, formData.nomorSP, formData.tanggalSP, formData.pejabat, formData.namaKegiatan, JSON.stringify(formData)];
+        let isUpdated = false;
+        if (sheetRiwayat.getLastRow() > 1) {
+          const data = sheetRiwayat.getRange(2, 1, sheetRiwayat.getLastRow() - 1, 1).getValues();
+          for (let i = 0; i < data.length; i++) {
+            if (data[i][0] == timestamp) {
+              sheetRiwayat.getRange(i + 2, 1, 1, 6).setValues([rowData]);
+              isUpdated = true; break;
+            }
+          }
+        }
+        if (!isUpdated) sheetRiwayat.appendRow(rowData);
+      }
+    } catch(e) { console.log("Gagal simpan riwayat"); }
+
+    // --- 2. PENYIAPAN DOKUMEN ---
+    const jmlPegawai = formData.listPegawai ? formData.listPegawai.length : 0;
+    const selectedTemplateId = (jmlPegawai <= 2) ? TEMPLATE_ID_KECIL : TEMPLATE_ID_BESAR;
+    
+    const templateFile = DriveApp.getFileById(selectedTemplateId);
+    const tempFolder = DriveApp.getRootFolder();
+    
+    // Penamaan file sesuai Nomor SP
+    const namaAman = formData.nomorSP.replace(/[\\\/\:\*\?\"<>\|]/g, '-');
+    tempFile = templateFile.makeCopy('TEMP_SP_' + namaAman, tempFolder);
+    
+    const tempDoc = DocumentApp.openById(tempFile.getId());
+    const body = tempDoc.getBody();
+
+    // --- 3. REPLACETEXT DATA GLOBAL ---
+    const tglIndo = formatTanggalIndonesia(formData.tanggalSP);
+    
+    const replaceOrCollapseLine = (tag, value) => {
+      const found = body.findText(tag);
+      if (found) {
+        const element = found.getElement();
+        const paragraph = element.getParent().asParagraph();
+        if (value && value.trim() !== "") {
+          paragraph.replaceText(tag, value);
+        } else {
+          paragraph.replaceText(tag, "");
+          paragraph.setSpacingAfter(0).setSpacingBefore(0).setLineSpacing(1).editAsText().setFontSize(1);
+        }
+      }
+    };
+
+    body.replaceText('{{NOMOR_SP}}', formData.nomorSP);
+    body.replaceText('{{TANGGAL_SP}}', tglIndo);
+    body.replaceText('{{JABATAN_TTE}}', formData.tteInfo || "");
+    body.replaceText('{{NAMA_PEJABAT}}', formData.pejabat || "");
+    body.replaceText('{{NIP_PEJABAT}}', (formData.pejabatData && formData.pejabatData.nip) ? formData.pejabatData.nip : "");
+    
+    replaceOrCollapseLine('{{TTD_HEADER_1}}', formData.ttdHeader1);
+    replaceOrCollapseLine('{{TTD_HEADER_2}}', formData.ttdHeader2);
+    replaceOrCollapseLine('{{TTD_HEADER_3}}', formData.ttdHeader3);
+
+    const kalimatKegiatan = `Sub Kegiatan ${formData.namaKegiatan || "..."} sesuai kodering : ${formData.kodeKegiatan || "..."}`;
+    body.replaceText('{{KODE_KEGIATAN}}', kalimatKegiatan);
+
+    if (formData.dasarHukum) processListSafe(body, '{{DASAR_HUKUM}}', formData.dasarHukum);
+
+    const listUntuk = [];
+    if (formData.uraian && formData.uraian[0]) listUntuk.push(formData.uraian[0]); 
+    const kalimatBudget = `Biaya Perjalanan Dinas dibebankan pada Dokumen Pelaksanaan Anggaran (DPA) Badan Kepegawaian Daerah Provinsi Jawa Barat Tahun Anggaran 2026, pada Kegiatan Pengadaan, Pemberhentian dan Informasi Kepegawaian ASN dengan Sub Kegiatan ${formData.namaKegiatan}, sesuai kodering : ${formData.kodeKegiatan}`;
+    listUntuk.push(kalimatBudget);
+    listUntuk.push("Melaporkan hasil perjalanan dinas kepada Kepala Badan Kepegawaian Daerah Provinsi Jawa Barat.");
+    processListSafe(body, '{{URAIAN_TUGAS}}', listUntuk);
+
+    // --- 4. PENGISIAN DAFTAR PEGAWAI ---
+    const tables = body.getTables();
+    let tableKepada;
+    for (let i = 0; i < tables.length; i++) {
+      if (tables[i].getText().includes("{{DAFTAR_KEPADA}}")) {
+        tableKepada = tables[i]; break;
+      }
+    }
+
+    if (tableKepada) {
+      tableKepada.setBorderWidth(0); 
+      formData.listPegawai.forEach((peg, index) => {
+        let r1 = tableKepada.appendTableRow();
+        raapatkanSelLabel(r1.appendTableCell((index + 1) + ". ")).setWidth(25);
+        raapatkanSelLabel(r1.appendTableCell("Nama")).setWidth(135);
+        raapatkanSelNilai(r1.appendTableCell(": " + (peg.nama || "")));
+        
+        if (peg.gol && peg.gol !== "-") {
+          let r2 = tableKepada.appendTableRow();
+          raapatkanSelLabel(r2.appendTableCell("")).setWidth(25);
+          raapatkanSelLabel(r2.appendTableCell("Pangkat / Gol. Ruang")).setWidth(135);
+          raapatkanSelNilai(r2.appendTableCell(": " + peg.gol));
+        }
+        if (peg.nip && peg.nip !== "-" && peg.nip !== "") {
+          let r3 = tableKepada.appendTableRow();
+          raapatkanSelLabel(r3.appendTableCell("")).setWidth(25);
+          raapatkanSelLabel(r3.appendTableCell("NIP.")).setWidth(135);
+          raapatkanSelNilai(r3.appendTableCell(": " + peg.nip));
+        }
+        let r4 = tableKepada.appendTableRow();
+        raapatkanSelLabel(r4.appendTableCell("")).setWidth(25);
+        raapatkanSelLabel(r4.appendTableCell("Jabatan")).setWidth(135);
+        raapatkanSelNilai(r4.appendTableCell(": " + (peg.jab || "")));
+
+        if (index < formData.listPegawai.length - 1) {
+          let spacerRow = tableKepada.appendTableRow();
+          spacerRow.setMinimumHeight(8); 
+          raapatkanSelLabel(spacerRow.appendTableCell("")).setWidth(25);
+          raapatkanSelLabel(spacerRow.appendTableCell("")).setWidth(135);
+          raapatkanSelLabel(spacerRow.appendTableCell(""));
+        }
+      });
+      tableKepada.removeRow(0); 
+    }
+
+    // --- 5. FINALIZE ---
+    tempDoc.saveAndClose();
+    const pdfBlob = tempFile.getAs(MimeType.PDF);
+    const base64 = Utilities.base64Encode(pdfBlob.getBytes());
+    tempFile.setTrashed(true);
+    return { base64: base64, idRiwayat: formData.idRiwayat };
+    
+  } catch (e) {
+    if (tempFile) try { tempFile.setTrashed(true); } catch(x){}
+    throw new Error("Gagal Generate PDF: " + e.message);
+  }
+}
+
+// --- FUNGSI PEMBANTU UNTUK KERAPIHAN (ARIAL 11PT) ---
+
+function raapatkanSelLabel(cell) {
+  let p = cell.getChild(0).asParagraph();
+  p.setSpacingAfter(0).setSpacingBefore(0).setLineSpacing(1.0).setAlignment(DocumentApp.HorizontalAlignment.LEFT);
+  cell.setPaddingTop(0).setPaddingBottom(1).setPaddingLeft(0).setPaddingRight(0);
+  return cell;
+}
+
+function raapatkanSelNilai(cell) {
+  let p = cell.getChild(0).asParagraph();
+  p.setSpacingAfter(0).setSpacingBefore(0).setLineSpacing(1.0);
+  p.setAlignment(DocumentApp.HorizontalAlignment.JUSTIFY);
+  
+  // Kalibrasi untuk Arial 11pt agar titik dua dan teks baris 2 sejajar
+  const buffer = 9.0; 
+  cell.setPaddingLeft(buffer).setPaddingTop(0).setPaddingBottom(1).setPaddingRight(0);
+  p.setIndentStart(buffer);
+  p.setIndentFirstLine(-buffer);
+  return cell;
+}
+
+function formatTanggalIndonesia(dateString) {
+  if (!dateString) return "-";
+  const parts = dateString.split('-');
+  if (parts.length !== 3) return dateString;
+  const namaBulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+  return `${parts[2].padStart(2, '0')} ${namaBulan[parseInt(parts[1]) - 1]} ${parts[0]}`;
+}
+
+function processListInTable(body, placeholder, dataArray) {
+  const found = body.findText(placeholder);
+  if (found) {
+    const element = found.getElement();
+    const paragraph = element.getParent();
+    const cell = paragraph.getParent(); // TableCell
+    
+    let cleanData = dataArray.filter(item => item && item.toString().trim() !== "");
+
+    if (cleanData.length > 0) {
+      cleanData.forEach((item, index) => {
+        // Karena di dalam TableCell tidak bisa appendListItem, kita gunakan Paragraf dengan indentasi manual
+        const p = cell.appendParagraph((index + 1) + ". " + item.toString());
+        p.setAlignment(DocumentApp.HorizontalAlignment.JUSTIFY);
+        p.setSpacingAfter(0).setSpacingBefore(0).setLineSpacing(1.0);
+        // Indentasi agar teks setelah angka lurus ke bawah
+        p.setIndentStart(14);
+        p.setIndentFirstLine(-14);
+      });
+      paragraph.removeFromParent(); // Hapus paragraf placeholder
+    } else {
+      element.setText("-");
+    }
+  }
+}
