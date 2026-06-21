@@ -1,4 +1,4 @@
-// ==========================================patkanSelNilai
+// ==========================================
 // KONFIGURASI
 // ==========================================
 const SPREADSHEET_ID = '1tXn4eM5D2pB31bSlymrI9gv9ntNh7nfnXJBUu8B0pT8';
