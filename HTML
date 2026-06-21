@@ -24,14 +24,133 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
+  <!-- jQuery UI untuk Autocomplete -->
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+
   <style>
-    /* --- SEARCH BAR MODERN SEPERTI GAMBAR --- */
-    .custom-search-container { display: flex; align-items: center; background: #ffffff; border-radius: 50px; padding: 4px 6px 4px 18px; border: 1px solid #e2e8f0; box-shadow: 0 2px 10px rgba(0,0,0,0.03); transition: all 0.3s ease; width: 350px; }
-    .custom-search-container:focus-within { border-color: #38a169; box-shadow: 0 0 0 0.25rem rgba(56, 161, 105, 0.2); }
-    .custom-search-input { flex-grow: 1; border: none !important; background: transparent !important; padding: 8px 0; outline: none !important; box-shadow: none !important; color: #4a5568; font-size: 0.9rem; }
-    .custom-search-input::placeholder { color: #a0aec0; }
-    .custom-search-btn { background-color: #4caf50; color: white; border: none; border-radius: 50%; width: 38px; height: 38px; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: background 0.3s, transform 0.2s; flex-shrink: 0; }
-    .custom-search-btn:hover { background-color: #388e3c; transform: scale(1.05); }
+  /* --- DESIGN SEARCH BOX MODERN --- */
+    .search-wrapper-modern { position: relative; display: flex; align-items: center; background: #ffffff; border: 1.5px solid #e2e8f0;     border-radius: 50px; padding: 4px 18px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); width: 100%; max-width: 380px; /* Sesuaikan lebar */
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+
+    /* Efek saat kolom diklik (Fokus) */
+    .search-wrapper-modern:focus-within {
+      border-color: #5850eb;
+      box-shadow: 0 0 0 4px rgba(88, 80, 235, 0.1);
+      transform: translateY(-1px);
+    }
+
+    .search-icon-left {
+      color: #94a3b8;
+      font-size: 1rem;
+      margin-right: 12px;
+    }
+
+    .search-input-modern {
+      border: none !important;
+      outline: none !important;
+      background: transparent !important;
+      padding: 8px 0 !important;
+      font-family: Arial, sans-serif !important;
+      font-size: 14px;
+      color: #1e293b;
+      flex-grow: 1;
+    }
+
+    /* Tombol X (Clear) */
+    .btn-clear-search {
+      cursor: pointer;
+      color: #94a3b8;
+      font-size: 0.8rem;
+      padding: 6px;
+      display: none; /* Sembunyi secara default */
+      border-radius: 50%;
+      transition: all 0.2s ease;
+    }
+
+    .btn-clear-search:hover {
+      color: #ef4444;
+      background-color: #fef2f2;
+    }
+
+    /* Animasi Tombol X Muncul */
+    .btn-clear-search.show-x {
+      display: block !important;
+      animation: animX 0.2s ease forwards;
+    }
+
+    .btn-clear-search {
+      display: none; /* SEMBUNYI SECARA DEFAULT */
+      cursor: pointer;
+      color: #94a3b8;
+      transition: all 0.2s;
+    }
+
+    /* HANYA MUNCUL JIKA ADA CLASS active-x */
+    .btn-clear-search.active-x {
+      display: block !important;
+      animation: animX 0.2s ease forwards;
+    }
+
+    @keyframes animX {
+      from { opacity: 0; transform: scale(0.5); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .btn-clear-search.active-x {
+      display: block !important;
+      opacity: 1 !important;
+    }
+
+    .active-x {
+      display: block !important;
+      animation: animX 0.2s ease forwards;
+    }
+
+    /* --- STYLE AUTOCOMPLETE ALA GOOGLE --- */
+    .ui-autocomplete {
+      background: #ffffff !important;
+      border-radius: 12px !important;
+      border: 1px solid #e2e8f0 !important;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+      padding: 8px 0 !important;
+      font-family: Arial, sans-serif !important;
+      z-index: 9999 !important; /* Agar muncul di atas modal */
+      max-height: 250px;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .ui-menu-item {
+      padding: 5px 15px !important;
+      transition: all 0.2s;
+    }
+
+    .ui-menu-item-wrapper {
+      padding: 8px 12px !important;
+      border: none !important;
+      color: #475569 !important;
+      font-size: 14px !important;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Ikon kaca pembesar kecil di setiap saran */
+    .ui-menu-item-wrapper::before {
+      content: "\f52a"; /* Bootstrap Icon Search */
+      font-family: "bootstrap-icons";
+      color: #94a3b8;
+      font-size: 12px;
+    }
+
+    .ui-state-active, .ui-widget-content .ui-state-active {
+      background-color: #f1f5f9 !important;
+      color: #5850eb !important;
+      border: none !important;
+      margin: 0 !important;
+    }
 
     /* --- THEME TANGGAL MODERN (PURPLE) --- */
 /* --- COMPACT MODERN DATEPICKER (UKURAN DISESUAIKAN) --- */
@@ -1179,7 +1298,7 @@ span.flatpickr-weekday {
     }
 
     .modal-fullscreen .modal-body {
-      padding: 2rem !important; /* Beri ruang lega di sekitar tabel */
+      padding-top: 10px !important;
     }
 
     /* Pastikan header modal fullscreen tetap putih bersih */
@@ -1691,29 +1810,30 @@ span.flatpickr-weekday {
 
 <!-- MODAL RIWAYAT SP -->
 <div class="modal fade" id="modalRiwayat" tabindex="-1">
-  <!-- GANTI modal-xl MENJADI modal-fullscreen -->
   <div class="modal-dialog modal-fullscreen"> 
     <div class="modal-content border-0">
       
-      <!-- HEADER -->
-      <div class="modal-header border-0 pb-0 mt-2 px-4 d-flex justify-content-between align-items-center">
+      <!-- HEADER YANG LEBIH RAPAT -->
+      <div class="modal-header border-0 pb-2 pt-3 px-4 d-flex justify-content-between align-items-center">
         <div>
-          <h5 class="modal-title fw-bold" style="font-size: 1.5rem;">Riwayat Surat Perintah</h5>
-          <p class="text-muted mb-0">Manajemen data riwayat perjalanan dinas seluruh pegawai.</p>
+          <h5 class="modal-title fw-bold" style="font-size: 1.3rem; color: #1e293b;">Riwayat Surat Perintah</h5>
+          <p class="text-muted small mb-0">Manajemen data riwayat perjalanan dinas.</p>
         </div>
         <button type="button" class="btn-close-circle" data-bs-dismiss="modal">
           <i class="bi bi-x-lg"></i>
         </button>
       </div>
 
-      <div class="modal-body px-4 pb-4">
-        <!-- Area Pencarian & Tombol -->
-        <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
-           <div class="custom-search-container">
-            <input type="text" id="customSearchBoxRiwayat" class="custom-search-input" placeholder="Cari Riwayat...">
-            <button class="custom-search-btn" type="button"><i class="bi bi-search"></i></button>
-          </div>
-        </div>
+      <div class="modal-body px-4 pt-1"> <!-- pt-1 untuk merapatkan ke judul -->
+  <!-- Search Box diletakkan langsung di atas tabel -->
+  <div class="mb-2"> 
+    <div class="search-wrapper-modern" style="max-width: 300px;">
+      <i class="bi bi-search search-icon-left"></i>
+      <input type="text" id="customSearchBoxRiwayat" class="search-input-modern" placeholder="Cari Nomor SP atau Nama..." autocomplete="off">
+      <!-- Tombol X -->
+      <i class="bi bi-x-lg btn-clear-search" id="clearSearchRiwayat"></i>
+    </div>
+  </div>
 
         <!-- TABEL -->
         <div class="table-responsive">
@@ -1731,13 +1851,10 @@ span.flatpickr-weekday {
                 <th class="text-center">AKSI</th>
               </tr>
             </thead>
-            <tbody>
-              <!-- Data dimuat melalui fungsi renderTableRiwayat di JavaScript -->
-            </tbody>
+            <tbody></tbody>
           </table>
         </div>
       </div>
-
     </div>
   </div>
 </div>
@@ -1781,10 +1898,12 @@ span.flatpickr-weekday {
           </div>
 
           <!-- Search Bar Modern -->
-          <div class="custom-search-container">
-            <input type="text" id="customSearchBox" class="custom-search-input" placeholder="Cari Nama / NIP...">
-            <button class="custom-search-btn" type="button"><i class="bi bi-search"></i></button>
-          </div>
+          <div class="search-wrapper-modern">
+  <i class="bi bi-search search-icon-left"></i>
+  <!-- autocomplete="on" mengaktifkan fitur auto-fill browser -->
+  <input type="text" id="customSearchBox" class="search-input-modern" placeholder="Cari Nama atau NIP..." autocomplete="on">
+  <i class="bi bi-x-lg btn-clear-search" id="clearSearchPegawai"></i>
+</div>
         </div>
 
         <!-- Tabel Pegawai Modern -->
@@ -1835,11 +1954,17 @@ span.flatpickr-weekday {
             <i class="bi bi-plus-lg"></i> Tambah Kegiatan
           </button>
 
+
+
           <!-- Search Bar Modern -->
-          <div class="custom-search-container">
-            <input type="text" id="customSearchBoxKegiatan" class="custom-search-input" placeholder="Cari Kode / Nama...">
-            <button class="custom-search-btn" type="button"><i class="bi bi-search"></i></button>
-          </div>
+          <!-- SEARCH BOX MODERN - SUB KEGIATAN -->
+<div class="search-wrapper-modern">
+  <i class="bi bi-search search-icon-left"></i>
+  <!-- autocomplete="on" mengaktifkan fitur saran pencarian otomatis browser -->
+  <input type="text" id="customSearchBoxKegiatan" class="search-input-modern" placeholder="Cari Kode / Nama..." autocomplete="on">
+  <!-- Tombol X untuk clear search -->
+  <i class="bi bi-x-lg btn-clear-search" id="clearSearchKegiatan"></i>
+</div>
         </div>
 
         <div class="table-responsive">
@@ -1888,9 +2013,12 @@ span.flatpickr-weekday {
           </button>
 
           <!-- Search Bar Modern -->
-          <div class="custom-search-container">
-            <input type="text" id="customSearchBoxPejabat" class="custom-search-input" placeholder="Cari Pejabat...">
-            <button class="custom-search-btn" type="button"><i class="bi bi-search"></i></button>
+          <!-- SEARCH BOX MODERN - PEJABAT -->
+          <div class="search-wrapper-modern" style="max-width: 300px;">
+            <i class="bi bi-search search-icon-left"></i>
+            <input type="text" id="customSearchBoxPejabat" class="search-input-modern" placeholder="Cari Nama / Jabatan..." autocomplete="off">
+            <!-- Tombol X untuk clear search -->
+            <i class="bi bi-x-lg btn-clear-search" id="clearSearchPejabat"></i>
           </div>
         </div>
 
@@ -1955,6 +2083,39 @@ $(document).ready(function() {
   $('#placeholderInit').show().removeClass('d-none');
   $('#actionArea').addClass('d-none');
 
+  // --- LOGIKA SEARCH BOX KEGIATAN ---
+  const $searchInput = $('#customSearchBoxKegiatan');
+  const $clearBtn = $('#clearSearchKegiatan');
+
+  // Deteksi Input (Mengetik)
+  $searchInput.on('input', function() {
+    const val = $(this).val();
+    
+    // 1. Tampilkan/Sembunyikan tombol X
+    if (val.length > 0) {
+      $clearBtn.addClass('active-x');
+    } else {
+      $clearBtn.removeClass('active-x');
+    }
+
+    // 2. Jalankan Filter DataTables (Pastikan variabel instance tabel sudah benar)
+    if (dataTableKegiatanInstance) {
+      dataTableKegiatanInstance.search(val).draw();
+    }
+  });
+
+  // Deteksi Klik Tombol X (Clear)
+  $clearBtn.on('click', function() {
+    $searchInput.val(''); // Kosongkan teks
+    $clearBtn.removeClass('active-x'); // Sembunyikan X
+    $searchInput.focus(); // Kembalikan kursor ke input
+    
+    // Reset tabel ke kondisi awal
+    if (dataTableKegiatanInstance) {
+      dataTableKegiatanInstance.search('').draw();
+    }
+  });
+
 $('.modal').on('shown.bs.modal', function () {
   $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
     if ($.fn.DataTable.isDataTable('#tableRiwayat')) {
@@ -1973,10 +2134,13 @@ $('.modal').on('shown.bs.modal', function () {
 
 // --- OTOMATIS CLEAR PENCARIAN SAAT MODAL DITUTUP ---
   $('.modal').on('hidden.bs.modal', function () {
-    // 1. Bersihkan nilai teks di semua kotak pencarian
-    $('#customSearchBox, #customSearchBoxKegiatan, #customSearchBoxPejabat, #customSearchBoxRiwayat').val('');
+    // 1. Bersihkan semua teks input pencarian
+    $('.search-input-modern').val('');
 
-    // 2. Kembalikan tampilan tabel ke kondisi awal (tanpa filter)
+    // 2. KUNCI: Hapus class active-x agar tombol silang hilang
+    $('.btn-clear-search').removeClass('active-x');
+
+    // 3. Reset tampilan tabel ke kondisi awal
     if (dataTableInstance) dataTableInstance.search('').draw();
     if (dataTableKegiatanInstance) dataTableKegiatanInstance.search('').draw();
     if (dataTablePejabatInstance) dataTablePejabatInstance.search('').draw();
@@ -2087,6 +2251,115 @@ flatpickr("#tglKembali", configFlatpickr);
     loop: true,
     autoplay: true,
     path: 'https://assets4.lottiefiles.com/packages/lf20_x62chJ.json'
+  });
+}
+
+// --- LOGIKA SEARCH MODERN & TOMBOL X ---
+  
+  // Fungsi umum untuk menangani input dan tombol X
+  function handleSearchUI(inputID, clearBtnID, tableInstance) {
+  const $input = $(inputID);
+  const $clearBtn = $(clearBtnID);
+
+  // Deteksi saat mengetik
+  $input.off('input').on('input', function() {
+    const val = $(this).val();
+    
+    if (val.length > 0) {
+      $clearBtn.addClass('active-x'); // Munculkan X jika ada teks
+    } else {
+      $clearBtn.removeClass('active-x'); // Sembunyikan X jika kosong
+    }
+    
+    if (tableInstance) tableInstance.search(val).draw();
+  });
+
+  // Logika saat tombol X diklik
+  $clearBtn.off('click').on('click', function() {
+    $input.val(''); // Kosongkan teks
+    $(this).removeClass('active-x'); // LANGSUNG sembunyikan tombol X ini
+    $input.focus(); // Balikkan kursor ke kotak
+    
+    if (tableInstance) tableInstance.search('').draw();
+  });
+}
+
+  // Inisialisasi untuk masing-masing tabel (Panggil ini di dalam setTimeout renderTable)
+  // Contoh penggunaan di dalam fungsi renderTablePegawai:
+  // handleSearchUI('#customSearchBox', '#clearSearchPegawai', dataTableInstance);
+
+function setupAutocompletePegawai() {
+  // Ambil daftar nama dan NIP dari dbPegawai sebagai sumber saran
+  const sumberSaran = dbPegawai.map(p => p[0]); // p[0] adalah Nama
+
+  $("#customSearchBox").autocomplete({
+    source: sumberSaran,
+    minLength: 1, // Muncul setelah ketik 1 huruf
+    select: function(event, ui) {
+      const selectedValue = ui.item.value;
+      $(this).val(selectedValue);
+      // Langsung filter tabel saat saran dipilih
+      if (dataTableInstance) dataTableInstance.search(selectedValue).draw();
+      $("#clearSearchPegawai").addClass('active-x');
+      return false;
+    }
+  });
+}
+
+/**
+ * SETUP AUTOCOMPLETE KHUSUS RIWAYAT
+ * Mengambil saran dari Nomor SP dan Nama Pegawai yang pernah ditugaskan
+ */
+function setupAutocompleteRiwayat() {
+  let saranRiwayat = [];
+
+  dbRiwayat.forEach(row => {
+    // 1. Ambil Nomor SP (Kolom index 1)
+    if (row[1]) saranRiwayat.push(row[1]);
+
+    // 2. Ambil Nama-nama Pegawai dari data JSON (Kolom index 5)
+    try {
+      const formData = JSON.parse(row[5]);
+      if (formData.listPegawai) {
+        formData.listPegawai.forEach(p => saranRiwayat.push(p.nama));
+      }
+    } catch (e) { }
+  });
+
+  // Hapus duplikasi agar daftar saran bersih
+  saranRiwayat = [...new Set(saranRiwayat)];
+
+  $("#customSearchBoxRiwayat").autocomplete({
+    source: function(request, response) {
+      // Filter saran berdasarkan apa yang diketik (case insensitive)
+      let matcher = new RegExp($.ui.autocomplete.escapeRegex(request.term), "i");
+      response($.grep(saranRiwayat, function(item) {
+        return matcher.test(item);
+      }).slice(0, 10)); // Batasi hanya 10 saran teratas agar rapi
+    },
+    minLength: 1,
+    select: function(event, ui) {
+      $(this).val(ui.item.value);
+      // Jalankan filter pada tabel riwayat
+      if (dataTableRiwayatInstance) dataTableRiwayatInstance.search(ui.item.value).draw();
+      $("#clearSearchRiwayat").addClass('show-x');
+      return false;
+    }
+  });
+}
+
+function setupAutocompleteKegiatan() {
+  const sumberSaran = dbKegiatan.map(k => k[1]); // k[1] adalah Nama Kegiatan
+
+  $("#customSearchBoxKegiatan").autocomplete({
+    source: sumberSaran,
+    minLength: 1,
+    select: function(event, ui) {
+      $(this).val(ui.item.value);
+      if (dataTableKegiatanInstance) dataTableKegiatanInstance.search(ui.item.value).draw();
+      $("#clearSearchKegiatan").addClass('active-x');
+      return false;
+    }
   });
 }
 
@@ -2288,33 +2561,71 @@ function updateLoadingUI(val) {
 }
 
   function loadData() {
+  startSmartLoading(); // Jalankan pesawat terbang
+
   google.script.run.withSuccessHandler(function(data) {
     try {
+      // 1. Simpan data ke variabel database lokal
       dbPegawai = data.pegawai || [];
       dbKegiatan = data.kegiatan || [];
       dbPejabat = data.pejabat || [];
       dbRiwayat = data.riwayat || [];
+      const dbDasarHukum = data.dasarHukum || []; // Ambil data dasar hukum dari server
 
+      // 2. Render Semua Tabel
       renderTablePegawai(dbPegawai);
       renderTableKegiatan(dbKegiatan);
       renderTablePejabat(dbPejabat);
       renderTableRiwayat(dbRiwayat);
       
+      // 3. Inisialisasi komponen Input & Dropdown
       initMultiSelectPegawai();
       populateDropdown('#selectKegiatan', dbKegiatan, (item) => `${item[0]} - ${item[1]}`);
       populateDropdown('#selectPejabat', dbPejabat, (item) => `${item[0]}`);
       
-      loadDefaultDasarHukum();
+      // 4. LOGIKA PENGISIAN DASAR HUKUM (KUNCI PERBAIKAN)
+      $('#containerDasarHukum').empty();
+      if (dbDasarHukum.length > 0 && dbDasarHukum[0][0] !== "") {
+        // Jika di Google Sheets (Sheet DataDasarHukum) ada isinya, pakai itu
+        dbDasarHukum.forEach(item => { 
+          if(item[0]) addDasarHukum(item[0]); 
+        });
+      } else {
+        // JIKA KOSONG, panggil fungsi default (PMK & Pergub)
+        loadDefaultDasarHukum();
+      }
+
+      // 5. AKTIFKAN PENCARIAN (Panggil fungsi ini di sini)
+      initSearchAndAutofill();
+
+      // 6. Selesaikan Loading
       finishSmartLoading();
+
     } catch (e) {
-      console.error(e);
+      console.error("Render Error:", e);
       finishSmartLoading();
     }
   }).withFailureHandler(function(err) {
     clearInterval(loadingInterval);
     alert("Koneksi gagal: " + err);
+    $('#loading').hide();
   }).getDataMaster();
+} // <--- Tutup fungsi loadData di sini
+
+function initSearchAndAutofill() {
+  // Setup Autocomplete
+  setupAutocompletePegawai();
+  setupAutocompleteKegiatan();
+  setupAutocompleteRiwayat();
+
+  // Inisialisasi Tombol "X" dan Filter Pencarian
+  handleSearchUI('#customSearchBox', '#clearSearchPegawai', dataTableInstance);
+  handleSearchUI('#customSearchBoxKegiatan', '#clearSearchKegiatan', dataTableKegiatanInstance);
+  handleSearchUI('#customSearchBoxPejabat', '#clearSearchPejabat', dataTablePejabatInstance);
+  handleSearchUI('#customSearchBoxRiwayat', '#clearSearchRiwayat', dataTableRiwayatInstance);
 }
+
+
 
   function initUIComponents() {
   const cfg = { altInput: true, altFormat: "j F Y", dateFormat: "Y-m-d", locale: "id", plugins:[new confirmDatePlugin({confirmText: "Set Date", showAlways:true, theme:"light"})], onDayCreate: (d,s,f,el) => { if(el.dateObj.getDay()===0) el.classList.add('tanggal-merah'); } };
@@ -2331,131 +2642,150 @@ function updateLoadingUI(val) {
   // 4. RENDER TABEL
   // ==========================================
   function renderTableRiwayat(data) {
-    if ($.fn.DataTable.isDataTable('#tableRiwayat')) $('#tableRiwayat').DataTable().destroy();
-    const tbody = $('#tableRiwayat tbody').empty(); 
+  // 1. MEMBERSIHKAN INSTANCE LAMA (Mencegah Error Reinitialise)
+  if ($.fn.DataTable.isDataTable('#tableRiwayat')) {
+    $('#tableRiwayat').DataTable().clear().destroy();
+    $('#tableRiwayat').empty(); // Bersihkan HTML agar header tidak menumpuk
+    
+    // Bangun ulang struktur THEAD (9 Kolom)
+    $('#tableRiwayat').append(`
+      <thead>
+        <tr>
+          <th class="text-center">NO</th>
+          <th>NOMOR & TANGGAL SP</th>
+          <th>BERANGKAT</th>
+          <th>KEMBALI</th>
+          <th>PEGAWAI</th>
+          <th>MAKSUD / URAIAN</th>
+          <th>KEGIATAN</th>
+          <th>PEJABAT</th>
+          <th class="text-center">AKSI</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    `);
+  }
 
-    if (data && data.length > 0) {
-      let html = ""; 
-      // Membalik data agar SP terbaru muncul di baris paling atas
-      const reversedData = [...data].reverse();
+  const tbody = $('#tableRiwayat tbody');
+
+  if (data && data.length > 0) {
+    let html = "";
+    // Membalik urutan agar data terbaru di atas
+    const reversedData = [...data].reverse();
+    
+    reversedData.forEach((row, revIndex) => {
+      if(!row) return; 
       
-      reversedData.forEach((row, revIndex) => {
-        if(!row) return; 
+      // KUNCI: Index asli untuk fungsi Edit/Print/Hapus
+      const originalIndex = data.length - 1 - revIndex; 
+      const id = row[0] || ""; 
+      const noSP = row[1] || ""; 
+      const tglSP = row[2] || ""; 
+      const pjb = row[3] || ""; 
+      const kegName = row[4] || "";
+
+      let namaPegawaiHtml = "-";
+      let tglB = "-", tglK = "-", uraian = "-", kodeKeg = ""; 
+
+      try {
+        const formData = JSON.parse(row[5]);
         
-        // KUNCI: Hitung index asli untuk keperluan Edit & Print
-        const originalIndex = data.length - 1 - revIndex; 
-        const id = row[0] || ""; 
-        const noSP = row[1] || ""; 
-        const tglSP = row[2] || ""; 
-        const pjb = row[3] || ""; 
-        const kegName = row[4] || "";
+        // Ambil Kodering
+        kodeKeg = formData.kodeKegiatan || "";
+        
+        // Render Stack Pegawai (Box Putih, Ikon Hijau, Uppercase)
+        if (formData.listPegawai && formData.listPegawai.length > 0) {
+          namaPegawaiHtml = `<div class="pegawai-stack">` + 
+            formData.listPegawai.map(p => 
+              `<div class="badge-pegawai-modern">
+                 <i class="bi bi-person"></i> ${p.nama}
+               </div>`
+            ).join('') + `</div>`;
+        }
 
-        let namaPegawaiHtml = "-";
-        let tglBerangkat = "-";
-        let tglKembali = "-";
-        let uraian = "-";
-        let kodeKeg = ""; 
+        // Ambil Tanggal Perjalanan dari JSON
+        tglB = formData.tanggalBerangkat ? formatTanggalIndo(formData.tanggalBerangkat) : "-";
+        tglK = formData.tanggalKembali ? formatTanggalIndo(formData.tanggalKembali) : "-";
+        uraian = formData.uraianRaw || "-";
+      } catch(e) { }
 
-        try {
-          const formData = JSON.parse(row[5]);
+      // Gabungkan Kodering dan Nama Kegiatan
+      let fullKegiatanHtml = (kodeKeg ? `<span style="font-weight: 800; color: #334155;">${kodeKeg}</span> - ` : "") + kegName;
+
+      // STRUKTUR 9 KOLOM
+      html += `<tr>
+          <td class="text-center text-muted small">${revIndex + 1}</td>
           
-          // Ambil Kodering dari JSON
-          kodeKeg = formData.kodeKegiatan || "";
+          <td>
+            <div class="td-primary-bold">${noSP}</div>
+            <div class="small text-muted mt-1" style="font-size: 11px;">
+              <i class="bi bi-calendar-event me-1"></i>${tglSP}
+            </div>
+          </td>
+
+          <td class="small td-nowrap text-primary"><i class="bi bi-box-arrow-up-right me-1"></i>${tglB}</td>
+          <td class="small td-nowrap text-danger"><i class="bi bi-box-arrow-in-down-left me-1"></i>${tglK}</td>
           
-          // Render Stack Pegawai (Box Putih, Icon Hijau, Uppercase)
-          if (formData.listPegawai && formData.listPegawai.length > 0) {
-            namaPegawaiHtml = `<div class="pegawai-stack">` + 
-              formData.listPegawai.map(p => 
-                `<div class="badge-pegawai-modern">
-                   <i class="bi bi-person"></i> ${p.nama}
-                 </div>`
-              ).join('') + `</div>`;
-          }
-
-          if (formData.tanggalBerangkat) tglBerangkat = formatTanggalIndo(formData.tanggalBerangkat);
-          if (formData.tanggalKembali) tglKembali = formatTanggalIndo(formData.tanggalKembali);
+          <td>${namaPegawaiHtml}</td>
           
-          uraian = formData.uraianRaw || (formData.uraian ? formData.uraian.join(' ') : "-");
-        } catch(e) { }
-
-        // Gabungkan Kodering (Bold Slate) dengan Nama Kegiatan
-        let fullKegiatanHtml = (kodeKeg ? `<span style="font-weight: 600; color: #334155;">${kodeKeg}</span> - ` : "") + kegName;
-
-        // STRUKTUR 9 KOLOM (Top Align via CSS)
-        html += `<tr>
-            <td class="text-center text-muted small">${revIndex + 1}</td> <!-- 0. NO -->
-            
-            <td>
-              <div class="td-primary-bold">${noSP}</div>
-              <div class="small text-muted mt-1" style="font-size: 11px;">
-                <i class="bi bi-calendar-event me-1"></i>${tglSP}
+          <td><div class="uraian-wrapper">${uraian}</div></td>
+          
+          <td><div class="kegiatan-wrapper">${fullKegiatanHtml}</div></td>
+          
+          <td class="small text-secondary td-nowrap">${pjb}</td>
+          
+          <td class="text-center">
+              <div class="d-flex justify-content-center gap-2">
+                  <button class="btn-action-circle btn-edit" onclick="editRiwayat(${originalIndex})" title="Edit">
+                      <i class="bi bi-pencil-fill"></i>
+                  </button>
+                  <button class="btn-action-circle btn-print" onclick="cetakRiwayat(${originalIndex})" title="Cetak">
+                      <i class="bi bi-printer-fill"></i>
+                  </button>
+                  <button class="btn-action-circle btn-delete" onclick="hapusRiwayat('${id}')" title="Hapus">
+                      <i class="bi bi-trash-fill"></i>
+                  </button>
               </div>
-            </td> <!-- 1. NOMOR & TANGGAL (INDIGO) -->
+          </td>
+      </tr>`;
+    });
+    tbody.html(html);
+  }
 
-            <td class="small td-nowrap"><i class="bi bi-box-arrow-up-right me-1 text-primary"></i>${tglBerangkat}</td> <!-- 2. BERANGKAT -->
-            <td class="small td-nowrap"><i class="bi bi-box-arrow-in-down-left me-1 text-danger"></i>${tglKembali}</td> <!-- 3. KEMBALI -->
-            
-            <td>${namaPegawaiHtml}</td> <!-- 4. PEGAWAI (BOX STYLE) -->
-            
-            <td><div class="uraian-wrapper">${uraian}</div></td> <!-- 5. MAKSUD (WRAP TEXT) -->
-            
-            <td><div class="kegiatan-wrapper">${fullKegiatanHtml}</div></td> <!-- 6. KEGIATAN (WRAP + KODERING) -->
-            
-            <td class="small text-secondary td-nowrap">${pjb}</td> <!-- 7. PEJABAT -->
-            
-            <td class="text-center"> <!-- 8. AKSI -->
-                <div class="d-flex justify-content-center gap-2">
-                    <button class="btn-action-circle btn-edit" onclick="editRiwayat(${originalIndex})" title="Edit">
-                        <i class="bi bi-pencil-fill"></i>
-                    </button>
-                    <button class="btn-action-circle btn-print" onclick="cetakRiwayat(${originalIndex})" title="Cetak">
-                        <i class="bi bi-printer-fill"></i>
-                    </button>
-                    <button class="btn-action-circle btn-delete" onclick="hapusRiwayat('${id}')" title="Hapus">
-                        <i class="bi bi-trash-fill"></i>
-                    </button>
-                </div>
-            </td>
-        </tr>`;
-      });
-      tbody.html(html);
+  setTimeout(() => {
+    dataTableRiwayatInstance = $('#tableRiwayat').DataTable({ 
+      destroy: true, // WAJIB agar tidak error reinitialise
+      pageLength: 5,
+      lengthMenu: [5, 10, 25, 50, 100], 
+      scrollX: true, 
+      autoWidth: false,
+      ordering: false, 
+      dom: "<'row'<'col-sm-12'tr>><'row bg-light py-3 border-top mt-3 align-items-center'<'col-sm-4'l><'col-sm-4 text-center text-muted'i><'col-sm-4'p>>", 
+      language: { 
+        lengthMenu: "Tampilkan: _MENU_", 
+        paginate: { next: '<i class="bi bi-chevron-right"></i>', previous: '<i class="bi bi-chevron-left"></i>' },
+        info: "Menampilkan _START_ - _END_ dari _TOTAL_ data"
+      },
+      columnDefs: [
+        { targets: 0, width: "40px" },
+        { targets: 1, width: "200px" },
+        { targets: [2, 3], width: "150px" },
+        { targets: 4, width: "280px" },
+        { targets: 5, width: "380px" }, // Maksud
+        { targets: 6, width: "350px" }, // Kegiatan
+        { targets: 7, width: "200px" },
+        { targets: 8, width: "130px", className: "text-center" }
+      ]
+    });
+
+    // Jalankan ulang fungsi listener pencarian agar tombol "X" bekerja
+    if (typeof handleSearchUI === "function") {
+      handleSearchUI('#customSearchBoxRiwayat', '#clearSearchRiwayat', dataTableRiwayatInstance);
     }
-
-     setTimeout(() => {
-      dataTableRiwayatInstance = $('#tableRiwayat').DataTable({ 
-        pageLength: 5,
-        lengthMenu: [5, 10, 25, 50, 100], 
-        scrollX: true, 
-        autoWidth: false,
-        ordering: false, 
-        dom: "<'row'<'col-sm-12'tr>><'row bg-light py-3 border-top mt-3 align-items-center'<'col-sm-4'l><'col-sm-4 text-center text-muted'i><'col-sm-4'p>>", 
-        language: { 
-          lengthMenu: "Tampilkan: _MENU_", 
-          info: "Menampilkan _START_ - _END_ dari _TOTAL_ data" 
-        },
-        columnDefs: [
-          { targets: 0, width: "40px" },
-          { targets: 1, width: "160px" },
-          { targets: [2, 3], width: "150px" },
-          { targets: 4, width: "350px" },
-          { targets: 5, width: "380px" }, // Maksud
-          
-          // KUNCI: Perlebar targets 6 (Kegiatan) agar muat teks panjang
-          { targets: 6, width: "350px" }, 
-          
-          { targets: 7, width: "200px" },
-          { targets: 8, width: "130px", className: "text-center" }
-        ]
-      });
-
-      // Binding kolom pencarian custom
-      $('#customSearchBoxRiwayat').off('input').on('input', function() { 
-        dataTableRiwayatInstance.search(this.value).draw(); 
-      });
-      
-      // Paksa penyesuaian kolom saat modal fullscreen terbuka
-      dataTableRiwayatInstance.columns.adjust().draw();
-    }, 150);
+    
+    // Sejajarkan header (Kunci untuk modal fullscreen)
+    dataTableRiwayatInstance.columns.adjust().draw();
+  }, 150);
 }
 
   function renderTablePegawai(data) {
@@ -2501,10 +2831,8 @@ function updateLoadingUI(val) {
         columnDefs: [{ targets: 0, width: "300px" }, { targets: 4, width: "100px" }]
       });
 
-      // Hubungkan Pencarian
-      $('#customSearchBox').off('input').on('input', function() {
-        dataTableInstance.search(this.value).draw();
-      });
+      handleSearchUI('#customSearchBox', '#clearSearchPegawai', dataTableInstance);
+
     }, 150);
 }
 
@@ -2541,15 +2869,13 @@ function updateLoadingUI(val) {
       });
 
       // Hubungkan Pencarian
-      $('#customSearchBoxKegiatan').off('input').on('input', function() {
-        dataTableKegiatanInstance.search(this.value).draw();
-      });
+      handleSearchUI('#customSearchBoxKegiatan', '#clearSearchKegiatan', dataTableKegiatanInstance);
     }, 150);
 }
 
 function renderTablePejabat(data) {
     if ($.fn.DataTable.isDataTable('#tablePejabatMaster')) $('#tablePejabatMaster').DataTable().destroy();
-    const tbody = $('#tablePejabatMaster tbody'); tbody.empty();
+    const tbody = $('#tablePejabatMaster tbody').empty();
     
     if (data && data.length > 0) {
       let html = "";
@@ -2557,14 +2883,18 @@ function renderTablePejabat(data) {
         if(!row) return; 
         html += `<tr>
             <td class="td-primary">
-                <i class="bi bi-person-fill name-icon"></i> ${row[0]||""}
+                <i class="bi bi-person-fill name-icon"></i> ${row[0]}
             </td>
             <td class="text-muted small">${row[1]}</td>
             <td class="text-secondary small">${row[2]}</td>
             <td class="text-center">
                 <div class="d-flex justify-content-center gap-2">
-                    <button class="btn-action-circle btn-edit" onclick="showEditPejabatForm(${index})"><i class="bi bi-pencil-fill"></i></button>
-                    <button class="btn-action-circle btn-delete" onclick="hapusPejabat(${index}, '${row[0]}')" title="Hapus"><i class="bi bi-trash-fill"></i></button>
+                    <button class="btn-action-circle btn-edit" onclick="showEditPejabatForm(${index})" title="Edit">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <button class="btn-action-circle btn-delete" onclick="hapusPejabat(${index}, '${row[0]}')" title="Hapus">
+                        <i class="bi bi-trash-fill"></i>
+                    </button>
                 </div>
             </td>
         </tr>`; 
@@ -2573,19 +2903,26 @@ function renderTablePejabat(data) {
     }
 
     setTimeout(() => {
+      // 1. Inisialisasi DataTable ke variabel global
       dataTablePejabatInstance = $('#tablePejabatMaster').DataTable({ 
         pageLength: 5,
         lengthMenu: [5, 10, 25],
         scrollX: true,
         autoWidth: false,
         dom: "<'row'<'col-sm-12'tr>><'row bg-light py-2 border-top mt-2 align-items-center'<'col-sm-6'i><'col-sm-6'p>>",
-        language: { lengthMenu: "Tampilkan: _MENU_", info: "Total : _TOTAL_ Pejabat" }
+        language: { 
+          lengthMenu: "Tampilkan: _MENU_", 
+          info: "Total _TOTAL_ Pejabat",
+          paginate: { next: '>', previous: '<' }
+        }
       });
 
-      // Hubungkan Pencarian
-      $('#customSearchBoxPejabat').off('input').on('input', function() {
-        dataTablePejabatInstance.search(this.value).draw();
-      });
+      // 2. KUNCI PERBAIKAN: Hubungkan Input dengan Tabel & Tombol X
+      // Menggunakan fungsi handleSearchUI yang sudah kita buat sebelumnya
+      if (typeof handleSearchUI === "function") {
+        handleSearchUI('#customSearchBoxPejabat', '#clearSearchPejabat', dataTablePejabatInstance);
+      }
+
     }, 150);
 }
 
@@ -2610,8 +2947,14 @@ function renderTablePejabat(data) {
   }
 
   function addDasarHukum(isiText = "") {
-    $('#containerDasarHukum').append(`<div class="row-item bg-white border p-2 mb-2 rounded shadow-sm"><textarea class="form-control form-control-sm mb-1 border-0 bg-light" name="dasarHukum[]" rows="3" placeholder="Ketik dasar surat...">${isiText}</textarea><div class="text-end"><span class="badge bg-danger cursor-pointer" style="cursor:pointer" onclick="$(this).closest('.row-item').remove()">Hapus</span></div></div>`);
-  }
+  $('#containerDasarHukum').append(`
+    <div class="row-item bg-white border p-2 mb-2 rounded shadow-sm">
+      <textarea class="form-control form-control-sm mb-1 border-0 bg-light" name="dasarHukum[]" rows="3" placeholder="Ketik dasar surat...">${isiText}</textarea>
+      <div class="text-end">
+        <span class="badge bg-danger cursor-pointer" style="cursor:pointer" onclick="$(this).closest('.row-item').remove()">Hapus</span>
+      </div>
+    </div>`);
+}
 
   // ==========================================
   // 6. RIWAYAT (EDIT, RESET, CETAK, HAPUS)
@@ -2676,6 +3019,7 @@ function renderTablePejabat(data) {
     ];
     defaultDasar.forEach(teks => addDasarHukum(teks));
   }
+
 
   function resetFormSP() {
     Swal.fire({
